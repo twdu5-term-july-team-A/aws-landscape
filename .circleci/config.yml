@@ -20,17 +20,8 @@ jobs:
                ./scripts/create_tf_state_bucket.sh $TRAINING_COHORT;
                ./scripts/create_key_pair.sh $TRAINING_COHORT;
                ./scripts/create_tf_state_bucket.sh $TEST_COHORT;
-               ./scripts/create_key_pair.sh $TEST_COHORT;
-
-
- buildBaseNetworkForEnvironments:
-  <<: *defaults
-  steps:
-    - checkout
-    - run:
-       command: source /okta_venv/bin/activate;
-         ./scripts/run_terraform.sh $TRAINING_COHORT base_networking apply -input=false -auto-approve;
-         ./scripts/run_terraform.sh $TRAINING_COHORT bastion apply -input=false -auto-approve;
+               ./scripts/run_terraform.sh $TRAINING_COHORT base_networking apply -input=false -auto-approve;
+               ./scripts/run_terraform.sh $TRAINING_COHORT bastion apply -input=false -auto-approve;
 
  buildTestEnvironment:
    <<: *defaults
@@ -111,18 +102,20 @@ workflows:
           requires:
             - approvebuildAMIs
 
-      - approveBuildEnvironment:
+      - approveBuildTestEnvironment:
           type: approval
           requires:
             - dummy
-      - buildBaseNetworkForEnvironments:
+      - buildTestEnvironment:
           requires:
-            - approveBuildEnvironment
-      - buildTestEnvironment
+            - approveBuildTestEnvironment
+
+
       - approveBuildProductionEnvironment:
           type: approval
           requires:
             - dummy
+
       - buildProductionEnvironment:
           requires:
             - approveBuildProductionEnvironment
