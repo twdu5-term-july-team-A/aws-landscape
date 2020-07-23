@@ -11,7 +11,7 @@ data "terraform_remote_state" "base_networking" {
   backend = "s3"
   config {
     key    = "base_networking.tfstate"
-    bucket = "tw-dataeng-${var.cohort}-tfstate"
+    bucket = "tw-dataeng-${var.default_cohort}-tfstate"
     region = "${var.aws_region}"
   }
 }
@@ -20,7 +20,7 @@ data "terraform_remote_state" "bastion" {
   backend = "s3"
   config {
     key    = "bastion.tfstate"
-    bucket = "tw-dataeng-${var.cohort}-tfstate"
+    bucket = "tw-dataeng-${var.default_cohort}-tfstate"
     region = "${var.aws_region}"
   }
 }
@@ -42,7 +42,8 @@ module "training_kafka" {
   deployment_identifier     = "data-eng-${var.cohort}"
   vpc_id                    = "${data.terraform_remote_state.base_networking.vpc_id}"
   subnet_id                 = "${data.terraform_remote_state.base_networking.private_subnet_ids[0]}"
-  ec2_key_pair              = "tw-dataeng-${var.cohort}"
+  ec2_key_pair              = "tw-dataeng-${var.default_cohort}"
   dns_zone_id               = "${data.terraform_remote_state.base_networking.dns_zone_id}"
   instance_type             = "${var.kafka["instance_type"]}"
+  env                       = "${var.env}"
 }

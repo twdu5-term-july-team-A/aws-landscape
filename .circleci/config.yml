@@ -19,6 +19,31 @@ jobs:
        command: source /okta_venv/bin/activate;
                ./scripts/create_tf_state_bucket.sh $TRAINING_COHORT;
                ./scripts/create_key_pair.sh $TRAINING_COHORT;
+               ./scripts/create_tf_state_bucket.sh $TEST_COHORT;
+               ./scripts/create_key_pair.sh $TEST_COHORT;
+
+
+ buildBaseNetworkForEnvironments:
+  <<: *defaults
+  steps:
+    - checkout
+    - run:
+       command: source /okta_venv/bin/activate;
+         ./scripts/run_terraform.sh $TRAINING_COHORT base_networking apply -input=false -auto-approve;
+         ./scripts/run_terraform.sh $TRAINING_COHORT bastion apply -input=false -auto-approve;
+
+ buildTestEnvironment:
+   <<: *defaults
+   steps:
+     - checkout
+     - run:
+         command: source /okta_venv/bin/activate;
+                  ./scripts/run_terraform.sh $TEST_COHORT training_bucket apply -input=false -auto-approve;
+                  ./scripts/run_terraform.sh $TEST_COHORT training_emr_cluster apply -input=false -auto-approve -var-file=prod-env.tfvars -var "default_cohort=$TRAINING_COHORT" -var "env=test";
+                  ./scripts/run_terraform.sh $TEST_COHORT training_kafka apply -input=false -auto-approve -var-file=prod-env.tfvars -var "default_cohort=$TRAINING_COHORT" -var "env=test";
+                  ./scripts/run_terraform.sh $TEST_COHORT ingester apply -input=false -auto-approve -var-file=prod-env.tfvars -var "default_cohort=$TRAINING_COHORT" -var "env=test";
+                  ./scripts/run_terraform.sh $TEST_COHORT monitoring_dashboard apply -input=false -auto-approve -var "env=test";
+                  ./scripts/run_terraform.sh $TRAINING_COHORT client_vpn apply -input=false -auto-approve;
 
  buildProductionEnvironment:
      <<: *defaults
@@ -26,13 +51,11 @@ jobs:
      - checkout
      - run:
          command: source /okta_venv/bin/activate;
-                 ./scripts/run_terraform.sh $TRAINING_COHORT base_networking apply -input=false -auto-approve;
-                 ./scripts/run_terraform.sh $TRAINING_COHORT bastion apply -input=false -auto-approve;
                  ./scripts/run_terraform.sh $TRAINING_COHORT training_bucket apply -input=false -auto-approve;
-                 ./scripts/run_terraform.sh $TRAINING_COHORT training_emr_cluster apply -input=false -auto-approve -var-file=prod-env.tfvars;
-                 ./scripts/run_terraform.sh $TRAINING_COHORT training_kafka apply -input=false -auto-approve -var-file=prod-env.tfvars;
-                 ./scripts/run_terraform.sh $TRAINING_COHORT ingester apply -input=false -auto-approve -var-file=prod-env.tfvars;
-                 ./scripts/run_terraform.sh $TRAINING_COHORT monitoring_dashboard apply -input=false -auto-approve;
+                 ./scripts/run_terraform.sh $TRAINING_COHORT training_emr_cluster apply -input=false -auto-approve -var-file=prod-env.tfvars -var "default_cohort=$TRAINING_COHORT" -var "env=prod";
+                 ./scripts/run_terraform.sh $TRAINING_COHORT training_kafka apply -input=false -auto-approve -var-file=prod-env.tfvars -var "default_cohort=$TRAINING_COHORT" -var "env=prod";
+                 ./scripts/run_terraform.sh $TRAINING_COHORT ingester apply -input=false -auto-approve -var-file=prod-env.tfvars -var "default_cohort=$TRAINING_COHORT" -var "env=prod";
+                 ./scripts/run_terraform.sh $TRAINING_COHORT monitoring_dashboard apply -input=false -auto-approve -var "env=prod";
                  ./scripts/run_terraform.sh $TRAINING_COHORT client_vpn apply -input=false -auto-approve;
 
  buildClientVPN:
@@ -72,7 +95,6 @@ workflows:
   build:
     jobs:
       - dummy
-
       - approvefirstTimeSetup:
           type: approval
           requires:
@@ -89,6 +111,14 @@ workflows:
           requires:
             - approvebuildAMIs
 
+      - approveBuildEnvironment:
+          type: approval
+          requires:
+            - dummy
+      - buildBaseNetworkForEnvironments:
+          requires:
+            - approveBuildEnvironment
+      - buildTestEnvironment
       - approveBuildProductionEnvironment:
           type: approval
           requires:

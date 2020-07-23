@@ -11,7 +11,7 @@ data "terraform_remote_state" "base_networking" {
   backend = "s3"
   config {
     key    = "base_networking.tfstate"
-    bucket = "tw-dataeng-${var.cohort}-tfstate"
+    bucket = "tw-dataeng-${var.default_cohort}-tfstate"
     region = "${var.aws_region}"
   }
 }
@@ -20,7 +20,7 @@ data "terraform_remote_state" "bastion" {
   backend = "s3"
   config {
     key    = "bastion.tfstate"
-    bucket = "tw-dataeng-${var.cohort}-tfstate"
+    bucket = "tw-dataeng-${var.default_cohort}-tfstate"
     region = "${var.aws_region}"
   }
 }
@@ -45,9 +45,10 @@ module "ingester" {
   dns_zone_id               = "${data.terraform_remote_state.base_networking.dns_zone_id}"
   instance_type             = "${var.ingester["instance_type"]}"
   subnet_id                 = "${data.terraform_remote_state.base_networking.public_subnet_ids[0]}"
-  ec2_key_pair              = "tw-dataeng-${var.cohort}"
+  ec2_key_pair              = "tw-dataeng-${var.default_cohort}"
   vpc_id                    = "${data.terraform_remote_state.base_networking.vpc_id}"
   deployment_identifier     = "data-eng-${var.cohort}"
   bastion_security_group_id = "${data.terraform_remote_state.bastion.bastion_security_group_id}"
   kafka_security_group_id   = "${data.terraform_remote_state.training_kafka.kafka_security_group_id}"
+  env                       = "${var.env}"
 }

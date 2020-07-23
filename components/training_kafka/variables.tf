@@ -12,3 +12,10 @@ variable "kafka" {
     instance_type = "t2.medium"
   }
 }
+
+variable "default_cohort" {
+  description = "Default cohort name to get network information"
+}
+variable "env" {
+  description = "The Environment on which the script is running"
+}

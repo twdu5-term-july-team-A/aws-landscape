@@ -1,4 +1,4 @@
-variable "deployment_identifier" {
+ variable "deployment_identifier" {
   description = "An identifier for this instantiation."
 }
 
@@ -33,3 +33,6 @@ variable "core_count" {
 variable "bastion_security_group_id" {
   description = "Id of bastion security group to allow SSH ingress"
 }
+ variable "env"{
+   description = "Environment on which the emr is created"
+ }

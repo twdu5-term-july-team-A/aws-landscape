@@ -29,3 +29,6 @@ variable "bastion_security_group_id" {
 variable "kafka_security_group_id" {
   description = "The security group id of Kafka to ingest to."
 }
+variable "env"{
+  description = "Environment on which the emr is created"
+}
