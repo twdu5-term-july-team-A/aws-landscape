@@ -189,3 +189,13 @@ resource "aws_security_group_rule" "bastion_hbase" {
   protocol                 = "tcp"
   description              = "HBase UI: http://master-dns-name:16010/"
 }
+
+resource "aws_security_group_rule" "airflow_webhdfs" {
+  type                     = "ingress"
+  security_group_id        = "${aws_security_group.emr_shared.id}"
+  cidr_blocks              = ["10.0.0.0/16"]
+  from_port                = 14000
+  to_port                  = 14000
+  protocol                 = "tcp"
+  description              = "Web HDFS: http://master-dns-name:14000/"
+}
