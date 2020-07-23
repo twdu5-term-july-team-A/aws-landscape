@@ -74,3 +74,24 @@ resource "aws_iam_policy_attachment" "airflow_parameter_store" {
   roles      = ["${aws_iam_role.airflow.name}"]
   policy_arn = "${aws_iam_policy.airflow_parameter_store.arn}"
 }
+
+data "aws_iam_policy_document" "airflow_sns" {
+  statement {
+    actions = [
+      "sns:Publish"
+    ]
+    resources = ["*"]
+  }
+}
+
+resource "aws_iam_policy" "airflow_sns" {
+  name        = "airflow-sns-${var.deployment_identifier}"
+  description = "Policy allows Airflow to publish message to sns"
+  policy      = "${data.aws_iam_policy_document.airflow_sns.json}"
+}
+
+resource "aws_iam_policy_attachment" "airflow_sns" {
+  name        = "airflow-sns-${var.deployment_identifier}"
+  roles       = ["${aws_iam_role.airflow.name}"]
+  policy_arn  = "${aws_iam_policy.airflow_sns.arn}"
+}
