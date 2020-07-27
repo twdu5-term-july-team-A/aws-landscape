@@ -36,7 +36,8 @@ data "terraform_remote_state" "ingester" {
 }
 
 resource "aws_cloudwatch_dashboard" "main" {
-  dashboard_name = "2wheelers${var.env == "prod" ? "" : "-${var.env}"}"
+  suffix = "${var.env == "prod" ? "" : "-${var.env}"}"
+  dashboard_name = "2wheelers${suffix}"
   dashboard_body = <<EOF
 {
     "widgets": [
@@ -160,6 +161,19 @@ resource "aws_cloudwatch_dashboard" "main" {
                         "max": 100
                     }
                 }
+            }
+        },
+        {
+            "type": "alarm",
+            "x": 0,
+            "y": 15,
+            "width": 12,
+            "height": 2,
+            "properties": {
+                "title": "stationMart Update Status",
+                "alarms": [
+                    "arn:aws:cloudwatch:ap-southeast-1:415298157058:alarm:stationMart${suffix} Update Alert"
+                ]
             }
         }
     ]
