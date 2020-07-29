@@ -25,10 +25,10 @@ data "terraform_remote_state" "bastion" {
   }
 }
 
-data "terraform_remote_state" "training_kafka" {
+data "terraform_remote_state" "training_newgen_kafka" {
   backend = "s3"
   config {
-    key    = "training_kafka.tfstate"
+    key    = "training_newgen_kafka.tfstate"
     bucket = "tw-dataeng-${var.cohort}-tfstate"
     region = "${var.aws_region}"
   }
@@ -49,6 +49,6 @@ module "ingester" {
   vpc_id                    = "${data.terraform_remote_state.base_networking.vpc_id}"
   deployment_identifier     = "data-eng-${var.cohort}"
   bastion_security_group_id = "${data.terraform_remote_state.bastion.bastion_security_group_id}"
-  kafka_security_group_id   = "${data.terraform_remote_state.training_kafka.kafka_security_group_id}"
+  kafka_security_group_id   = "${data.terraform_remote_state.training_newgen_kafka.kafka_security_group_id}"
   env                       = "${var.env}"
 }
