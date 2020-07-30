@@ -15,8 +15,12 @@ resource "aws_instance" "kafka" {
                         mount /dev/xvdh /data
 
                         # configure zookeeper properties
-                        systemctl stop confluent-zookeeper
                         systemctl stop confluent-kafka
+                        sleep 30
+                        systemctl stop confluent-zookeeper
+
+                        rm -rf /var/lib/zookeeper/version-2/*
+
                         echo "${count.index+1}" > /var/lib/zookeeper/myid
                         chown cp-kafka:confluent /var/lib/zookeeper/myid
 
@@ -32,9 +36,10 @@ resource "aws_instance" "kafka" {
                         sed -i -e "s|broker.id=0|broker.id=${count.index}|g" /etc/kafka/server.properties
                         sed -i -e "s|log.dirs=/var/lib/kafka|log.dirs=/data/kafka|g" /etc/kafka/server.properties
 
-                        /bin/zookeeper-server-start /etc/kafka/zookeeper.properties
-                        sleep 30
-                        /bin/kafka-server-start /etc/kafka/server.properties
+                        sleep 120
+                        nohup /bin/zookeeper-server-start /etc/kafka/zookeeper.properties > /var/log/kafka/zookeeper${count.index+1}.log &
+                        sleep 120
+                        nohup /bin/kafka-server-start /etc/kafka/server.properties  > /var/log/kafka/kafka${count.index+1}.log &
                         EOF
 
   tags = "${merge(
