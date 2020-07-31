@@ -76,8 +76,7 @@ jobs:
                  ./scripts/run_terraform.sh $TRAINING_COHORT training_emr_cluster destroy -input=false -auto-approve -var-file=prod-env.tfvars -var "default_cohort=$TRAINING_COHORT" -var "env=prod";
                  ./scripts/run_terraform.sh $TRAINING_COHORT training_bucket destroy -input=false -auto-approve;
 
-
-destroyTestEnvironment:
+ destroyTestEnvironment:
     <<: *defaults
     steps:
       - checkout
@@ -89,7 +88,8 @@ destroyTestEnvironment:
                   ./scripts/run_terraform.sh $TEST_COHORT training_emr_cluster destroy -input=false -auto-approve -var-file=prod-env.tfvars -var "default_cohort=$TRAINING_COHORT" -var "env=test";
                   ./scripts/run_terraform.sh $TEST_COHORT training_bucket destroy -input=false -auto-approve;
 
-destroyBaseNetwork:
+
+ destroyBaseNetwork:
     <<: *defaults
     steps:
       - checkout
@@ -98,7 +98,8 @@ destroyBaseNetwork:
                   ./scripts/run_terraform.sh $TRAINING_COHORT bastion destroy -input=false -auto-approve;
                   ./scripts/run_terraform.sh $TRAINING_COHORT base_networking destroy -input=false -auto-approve;
 
-destroyClientVPN:
+
+ destroyClientVPN:
     <<: *defaults
     steps:
       - checkout
